@@ -33,3 +33,9 @@ These switches can be entered in any of the following manner and are not case se
 `python solve.py -c -b`\
 `python solve.py -b`\
 `python solve.py -c`
+
+## Functionality
+This program works by iterating through the given word list and counting the number of distinct 
+letters in the word. If no letters outside of the 7 provided in the puzzle are present the word is 
+a valid solution and is added to the relevant list. If the word is a valid solution and has 7 
+distinct letters then it is a pangram and is added to the list of pangrams. Finally if the word is valid, has 7 distinct letters and is of length 7 then it is a perfect pangram and is added to that list.
