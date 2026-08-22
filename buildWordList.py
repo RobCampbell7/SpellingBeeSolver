@@ -1,27 +1,102 @@
-import re
+"""Build the word lists the solver searches, from their upstream sources.
+The default list comes from Collins Scrabble Words 2021, the tournament word list, which is close
+to what the puzzle actually accepts. The big list comes from a SCOWL/aspell dump, which is roughly
+twice the size and far looser.
 
-def bannedCombinations(word):
-    if re.search("[a-z]*[cj, cv, cx, dx, fq, fx, gq, gx, hx, jc, jf, jg, jq, js, jv, jw, jx, jz, kq, kx, mx, px, pz, qb, qc, qd, qf, qg, qh, qj, qk, ql, qm, qn, qp, qs, qt, qv, qw, qx, qy, qz, sx, vb, vf, vh, vj, vm, vp, vq, vt, vw, vx, wx, xj, xx, zj, zq, zx][a-z]*", word) == None:
-        return True
-    else:
-        return False
+Run this script to rebuild both lists; the raw sources are downloaded into ./sources the first time
+and reused after that. Adjust the filters in allow() to change what makes it into the built lists.
+"""
 
-def doubleLetter(word):
-    for i in range(1, len(word)):
-        if word[i] == word[i - 1]:
-            return True
-    return False
+import os
+import urllib.request
+
+from spellingBee import BIG_WORD_FILE, MIN_LENGTH, WORD_FILE
+
+CWD = os.path.dirname(os.path.abspath(__file__))
+SOURCE_DIR = os.path.join(CWD, "sources")
+
+COLLINS_SOURCE = "CSW21.txt"
+COLLINS_URL = ("https://raw.githubusercontent.com/scrabblewords/scrabblewords"
+               "/main/words/British/CSW21.txt")
+SCOWL_SOURCE = "scowl.txt"
+SCOWL_URL = ("https://raw.githubusercontent.com/nlile/dictionary-word-list"
+             "/master/largest_possible_aspell_wordlist_without_diacritic.txt")
+
+
+def uniqueCharLimit(word, limit=7):
+    letters = []
+    for c in word:
+        if c not in letters:
+            letters.append(c)
+    return len(letters) <= limit
 
 def allow(word):
-    return len(word) > 3 and word.isalpha() and word.lower() == word #and bannedCombinations(word) == False
+    """
+    Return True if word is worth keeping in a built list.
 
-words = []
-with open("wordsFromUnix.txt", "r") as dictFile:
-    for li in dictFile.readlines():
-        words.append(li.replace("\n", "").replace(" ", ""))
+    Anything shorter than the puzzle's minimum, or containg a character that cannot be typed into
+    the puzzle isremoved
+    Additionally any words that are made of more than seven unique characters are removed
+    """
+    if len(word) < MIN_LENGTH:
+        return False
+    elif not word.isascii() or not word.isalpha():
+        return False
+    elif uniqueCharLimit(word) == False:
+        return False
+    else:
+        return True
 
-words.sort()
-with open("words.txt", "w") as dictFile:
-    for word in words:
-        if allow(word) == True:
-            dictFile.write(word.lower() + "\n")
+
+def fetchSource(fileName, url):
+    """Return the path to a raw source, downloading it if it is not here yet."""
+    path = os.path.join(SOURCE_DIR, fileName)
+    if not os.path.exists(path):
+        if not os.path.isdir(SOURCE_DIR):
+            os.mkdir(SOURCE_DIR)
+
+        print("Downloading %s ..." % fileName)
+        urllib.request.urlretrieve(url, path)
+    return path
+
+
+def readCollins(path):
+    """Yield the words from a Collins list and removing the definitions."""
+    with open(path, "r") as sourceFile:
+        for line in sourceFile:
+            line = line.strip()
+            if len(line) == 0 or line.startswith("#"):
+                continue
+            yield line.split(" ")[0].lower()
+
+
+def readScowl(path):
+    """Yield the words from a SCOWL dump, preserving case."""
+    with open(path, "r") as sourceFile:
+        for line in sourceFile:
+            word = line.strip()
+            if len(word) == 0 or word.startswith("---"):
+                continue
+            yield word
+
+
+def build(sourceFileName, url, reader, targetPath):
+    """Filter one raw source into a sorted, deduplicated word list."""
+    sourcePath = fetchSource(sourceFileName, url)
+    words = sorted({word for word in reader(sourcePath) if allow(word)},
+                   key=lambda word: (word.lower(), word))
+
+    with open(targetPath, "w") as targetFile:
+        for word in words:
+            targetFile.write(word + "\n")
+
+    print("Wrote %d words to %s" % (len(words), os.path.basename(targetPath)))
+
+
+def main():
+    build(COLLINS_SOURCE, COLLINS_URL, readCollins, WORD_FILE)
+    build(SCOWL_SOURCE, SCOWL_URL, readScowl, BIG_WORD_FILE)
+
+
+if __name__ == "__main__":
+    main()
