@@ -7,8 +7,8 @@ Run with no arguments to be prompted for the puzzle's letters and have the solut
 import argparse
 import time
 
-from displayWords import printInColumns
-from spellingBee import BIG_WORD_FILE, PUZZLE_LETTERS, WORD_FILE, solve
+from .displayWords import printInColumns
+from .spellingBee import BIG_WORD_FILE, PUZZLE_LETTERS, WORD_FILE, solve
 
 COLUMNS = 4
 
@@ -23,14 +23,20 @@ def parseArgs():
                         help="type the solutions into the focused window instead of printing them")
     parser.add_argument("--delay", type=float, default=0.0, metavar="SECONDS",
                         help="pause between typed words (default: %(default)s)")
+    parser.add_argument("-p", "--puzzle", nargs="+", metavar="LETTERS",
+                        help="the puzzle's %d letters, centre letter first, instead of being"
+                             " prompted for them" % PUZZLE_LETTERS)
+    parser.add_argument("-tm", "--time", action="store_true",
+                        help="report how long the search itself took")
     return parser.parse_args()
 
 
-def readPuzzle():
-    """Prompt for the puzzle's letters, returning (centreLetter, outerLetters)."""
-    centreLetter = "".join(c for c in input("Centre Letter : ").upper() if c.isalpha())
-    outerLetters = tuple(c for c in input("Outer Letters : ").upper() if c.isalpha())
+def checkPuzzle(centreLetter, outerLetters):
+    """Return the letters unchanged, refusing anything that is not a legal puzzle.
 
+    Both ways of giving a puzzle, typed at the prompt or passed with -p, come through here so they
+    complain about the same things in the same words.
+    """
     if len(centreLetter) != 1:
         raise SystemExit("The centre letter must be a single letter.")
     if len(set(outerLetters)) != len(outerLetters):
@@ -41,6 +47,23 @@ def readPuzzle():
     if centreLetter in outerLetters:
         raise SystemExit("The centre letter cannot also be an outer letter.")
     return centreLetter, outerLetters
+
+
+def puzzleFromArgs(given):
+    """Turn the -p arguments into (centreLetter, outerLetters), the centre letter coming first.
+
+    However the letters are grouped is fine, so -p FLTEMOI, -p F LTEMOI and -p F L T E M O I all
+    describe the same puzzle.
+    """
+    letters = [char for char in "".join(given).upper() if char.isalpha()]
+    return checkPuzzle("".join(letters[:1]), tuple(letters[1:]))
+
+
+def readPuzzle():
+    """Prompt for the puzzle's letters, returning (centreLetter, outerLetters)."""
+    centreLetter = "".join(c for c in input("Centre Letter : ").upper() if c.isalpha())
+    outerLetters = tuple(c for c in input("Outer Letters : ").upper() if c.isalpha())
+    return checkPuzzle(centreLetter, outerLetters)
 
 
 def printWords(perfect, pangrams, otherWords):
@@ -79,8 +102,12 @@ def typeWords(words, delay):
 def main():
     args = parseArgs()
     wordFile = BIG_WORD_FILE if args.big else WORD_FILE
-    centreLetter, outerLetters = readPuzzle()
+    centreLetter, outerLetters = puzzleFromArgs(args.puzzle) if args.puzzle else readPuzzle()
+
+    start = time.time()
     perfect, pangrams, otherWords = solve(wordFile, centreLetter, outerLetters, args.caps)
+    if args.time:
+        print("\nSearched in %.3f seconds." % (time.time() - start))
 
     if args.typeOut:
         typeWords(perfect + pangrams + otherWords, args.delay)

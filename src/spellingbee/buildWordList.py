@@ -10,10 +10,10 @@ and reused after that. Adjust the filters in allow() to change what makes it int
 import os
 import urllib.request
 
-from spellingBee import BIG_WORD_FILE, MIN_LENGTH, WORD_FILE
+from .spellingBee import BIG_WORD_FILE, MIN_LENGTH, WORD_FILE
 
 CWD = os.path.dirname(os.path.abspath(__file__))
-SOURCE_DIR = os.path.join(CWD, "sources")
+SOURCE_DIR = os.path.join(os.path.dirname(os.path.dirname(CWD)), "sources")
 
 COLLINS_SOURCE = "CSW21.txt"
 COLLINS_URL = ("https://raw.githubusercontent.com/scrabblewords/scrabblewords"

@@ -1,19 +1,17 @@
 """Check that every test puzzle has at least one pangram in the word lists.
 
-Reads testPuzzles.txt, where each line is one puzzle written as its 7 letters with the centre
-letter first, and reports the pangrams found for each. Puzzles that no list can solve are the
-ones worth looking at: a real Spelling Bee puzzle always has at least one pangram, so a miss
-means the word list is short of a word it should hold.
+Reads testPuzzles.txt, where each line is one puzzle written as its 7 letters with the centre letter
+first, and reports the pangrams found for each. Puzzles that no list can solve are the ones worth
+looking at: a real Spelling Bee puzzle always has at least one pangram, so a miss means the word
+list is short of a word it should hold.
 
-Run it with `python testing/checkPangrams.py`. The exit status is 1 if any puzzle is missed.
+Needs the package installed. Run it with `python testing/checkPangrams.py`; the exit status is 1
+if any puzzle is missed.
 """
 
 import os
-import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from spellingBee import BIG_WORD_FILE, PUZZLE_LETTERS, WORD_FILE, isPangram
+from spellingbee.spellingBee import BIG_WORD_FILE, PUZZLE_LETTERS, WORD_FILE, isPangram
 
 PUZZLE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testPuzzles.txt")
 SHOWN_PER_PUZZLE = 3
@@ -38,9 +36,9 @@ def readPuzzles(path):
 def findPangrams(wordFile, puzzles, includeCaps=False):
     """Return a list of the pangrams found for each puzzle, in the same order as puzzles.
 
-    A pangram uses every one of the puzzle's letters and no others, so its set of distinct
-    letters is exactly the puzzle's set. That makes one pass over the word list enough to answer
-    for every puzzle at once, however many there are.
+    A pangram uses every one of the puzzle's letters and no others, so its set of distinct letters
+    is exactly the puzzle's set. That makes one pass over the word list enough to answer for every
+    puzzle at once, however many there are.
     """
     found = [[] for puzzle in puzzles]
     byLetters = {}

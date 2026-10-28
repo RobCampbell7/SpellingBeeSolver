@@ -10,8 +10,9 @@ MIN_LENGTH = 4
 PUZZLE_LETTERS = 7
 
 CWD = os.path.dirname(os.path.abspath(__file__))
-WORD_FILE = os.path.join(CWD, "words.txt")
-BIG_WORD_FILE = os.path.join(CWD, "megaWords.txt")
+PROJECT_DIR = os.path.dirname(os.path.dirname(CWD))
+WORD_FILE = os.path.join(PROJECT_DIR, "words.txt")
+BIG_WORD_FILE = os.path.join(PROJECT_DIR, "megaWords.txt")
 
 
 def possible(word, centreLetter, outerLetters):
