@@ -12,6 +12,9 @@ looks for them relative to its own file, so a plain `pip install .` leaves them 
 proper package, so running the script file directly doesn't work: use the command, or `python -m
 spellingbee.solve` if you prefer. Anything in `testing/` needs the install too.
 
+Python 3.8 or later is required. Everything runs on the standard library apart from typing the
+answers out, which uses the `keyboard` package (see below).
+
 Run `spellingbee` and you are prompted for the centre letter of the puzzle and then the 6 outer
 letters. The program searches a word list for every word that can be made from those letters. Each
 word must be at least 4 letters long and contain the centre letter, but does not have to use all of
