@@ -13,6 +13,7 @@ import urllib.request
 from .spellingBee import BIG_WORD_FILE, MIN_LENGTH, WORD_FILE
 
 CWD = os.path.dirname(os.path.abspath(__file__))
+# sources/ goes at the repo root, two folders up from the package
 SOURCE_DIR = os.path.join(os.path.dirname(os.path.dirname(CWD)), "sources")
 
 COLLINS_SOURCE = "CSW21.txt"
@@ -83,6 +84,7 @@ def readScowl(path):
 def build(sourceFileName, url, reader, targetPath):
     """Filter one raw source into a sorted, deduplicated word list."""
     sourcePath = fetchSource(sourceFileName, url)
+    # set drops the duplicates, sort ignores case so capitalised words sit next to the lowercase ones
     words = sorted({word for word in reader(sourcePath) if allow(word)},
                    key=lambda word: (word.lower(), word))
 

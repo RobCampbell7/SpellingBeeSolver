@@ -43,6 +43,7 @@ def findPangrams(wordFile, puzzles, includeCaps=False):
     found = [[] for puzzle in puzzles]
     byLetters = {}
     for index, (centreLetter, outerLetters) in enumerate(puzzles):
+        # keyed on the full letter set, so puzzles with the same 7 letters but a different centre share an entry
         byLetters.setdefault(frozenset((centreLetter,) + outerLetters), []).append(index)
 
     with open(wordFile, "r") as dictFile:
@@ -71,6 +72,7 @@ def describe(pangrams):
 def main():
     puzzles = readPuzzles(PUZZLE_FILE)
     default = findPangrams(WORD_FILE, puzzles)
+    # big list with caps allowed is the most generous check, only reported when words.txt has nothing
     big = findPangrams(BIG_WORD_FILE, puzzles, includeCaps=True)
 
     missed = 0

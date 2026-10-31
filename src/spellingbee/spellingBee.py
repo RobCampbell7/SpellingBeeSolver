@@ -10,6 +10,7 @@ MIN_LENGTH = 4
 PUZZLE_LETTERS = 7
 
 CWD = os.path.dirname(os.path.abspath(__file__))
+# word lists sit at the repo root, not in the package, hence going up two folders
 PROJECT_DIR = os.path.dirname(os.path.dirname(CWD))
 WORD_FILE = os.path.join(PROJECT_DIR, "words.txt")
 BIG_WORD_FILE = os.path.join(PROJECT_DIR, "megaWords.txt")
@@ -27,6 +28,7 @@ def possible(word, centreLetter, outerLetters):
 
 def isPangram(word):
     """Return True if word uses all seven of the puzzle's letters."""
+    # only safe because possible() has already ruled out any letter not in the puzzle
     return len(set(word)) == PUZZLE_LETTERS
 
 
@@ -44,6 +46,7 @@ def findWords(wordFile, centreLetter, outerLetters, includeCaps=False):
     with open(wordFile, "r") as dictFile:
         for line in dictFile:
             word = line.strip()
+            # skips anything with hyphens, apostrophes or digits
             if not word.isalpha():
                 continue
             if not includeCaps and not word.islower():
@@ -65,6 +68,7 @@ def solve(wordFile, centreLetter, outerLetters, includeCaps=False):
             pangrams.append(word)
         else:
             otherWords.append(word)
+    # perfect pangrams are all 7 letters so these just go alphabetical
     perfect.sort()
     pangrams.sort(key=len)
     otherWords.sort(key=len)

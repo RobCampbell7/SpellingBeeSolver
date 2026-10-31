@@ -5,11 +5,13 @@ from random import sample
 
 def printInColumns(words, noOfColumns):
     """Print words in noOfColumns columns, filling each column top to bottom."""
+    # column i gets every nth word starting from i, so each row reads across in the original order
     columns = [words[i::noOfColumns] for i in range(noOfColumns)]
     columns = [col for col in columns if len(col) > 0]
     if len(columns) == 0:
         return
 
+    # pad each column to its longest word so they line up
     widths = [len(max(col, key=len)) for col in columns]
     for row in range(len(columns[0])):
         cells = []
